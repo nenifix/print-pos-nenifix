@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asafo Print POS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'San Francisco', 'Roboto', 'Segoe UI', sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .calculator-card {
+            background-color: #121212;
+            border-radius: 16px;
+            padding: 48px;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #888888;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #cccccc;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            background-color: #1e1e1e;
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            background-color: #2a2a2a;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        button {
+            flex: 1;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reset-btn {
+            background-color: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .reset-btn:hover {
+            background-color: #3a3a3a;
+        }
+
+        .calculate-btn {
+            background-color: #00d4ff;
+            color: #000000;
+        }
+
+        .calculate-btn:hover {
+            background-color: #00b8e0;
+        }
+
+        .result-container {
+            text-align: center;
+            padding: 32px;
+            background-color: #1e1e1e;
+            border-radius: 12px;
+        }
+
+        .result-label {
+            font-size: 16px;
+            color: #888888;
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #00d4ff;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 24px;
+            background-color: rgba(255, 59, 48, 0.1);
+            border: 1px solid #ff3b30;
+            border-radius: 8px;
+            color: #ff3b30;
+            margin-top: 24px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #2a2a2a;
+            font-size: 14px;
+            color: #b2beb5;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-card">
+        <div class="header">
+            <h1 class="title">Asafo Print POS</h1>
+            <p class="subtitle">Print Price Calculator</p>
+        </div>
+
+        <form id="calculator-form">
+            <div class="form-group">
+                <label for="height">Height (feet)</label>
+                <input type="number" id="height" name="height" step="0.01" min="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="length">Length (feet)</label>
+                <input type="number" id="length" name="length" step="0.01" min="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="material">Material Type</label>
+                <select id="material" name="material" required>
+                    <option value="">Select Material</option>
+                    <option value="sticker">Sticker (GHS 2.50 per sq ft)</option>
+                    <option value="flexy">Flexy (GHS 3.00 per sq ft)</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="reset-btn" id="reset-btn">Reset</button>
+                <button type="submit" class="calculate-btn">Calculate</button>
+            </div>
+        </form>
+
+        <div class="result-container" id="result-container" style="display: none;">
+            <p class="result-label">Grand Total</p>
+            <p class="result-value" id="result-value">GHS 0.00</p>
+        </div>
+
+        <div class="error-message" id="error-message"></div>
+
+        <div class="footer">
+            Developed by Nenifix-info call +233202564302
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('calculator-form');
+        const resetBtn = document.getElementById('reset-btn');
+        const resultContainer = document.getElementById('result-container');
+        const resultValue = document.getElementById('result-value');
+        const errorMessage = document.getElementById('error-message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const height = document.getElementById('height').value;
+            const length = document.getElementById('length').value;
+            const material = document.getElementById('material').value;
+
+            errorMessage.classList.remove('show');
+            resultContainer.style.display = 'none';
+
+            try {
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ height, length, material })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultValue.textContent = `GHS ${data.total.toFixed(2)}`;
+                    resultContainer.style.display = 'block';
+                } else {
+                    errorMessage.textContent = data.error;
+                    errorMessage.classList.add('show');
+                }
+            } catch (err) {
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                errorMessage.classList.add('show');
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            form.reset();
+            resultContainer.style.display = 'none';
+            errorMessage.classList.remove('show');
+        });
+    </script>
+</body>
+</html>

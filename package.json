@@ -1,0 +1,14 @@
+{
+  "name": "asafo-print-pos",
+  "version": "1.0.0",
+  "description": "Local-only print shop price calculator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "author": "",
+  "license": "ISC"
+}

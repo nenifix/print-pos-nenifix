@@ -76,7 +76,7 @@
             border-radius: 24px;
             padding: 56px 48px;
             width: 100%;
-            max-width: 520px;
+            max-width: 580px;
             position: relative;
             z-index: 1;
             box-shadow: var(--shadow-soft);
@@ -107,7 +107,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 52px;
+            margin-bottom: 44px;
         }
 
         .title {
@@ -126,6 +126,42 @@
             color: var(--text-muted);
             letter-spacing: 0.08em;
             text-transform: uppercase;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 36px;
+            background: var(--bg-input);
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            letter-spacing: 0.02em;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: #000000;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .form-group {
@@ -179,12 +215,11 @@
         .button-group {
             display: flex;
             gap: 14px;
-            margin-bottom: 36px;
+            margin-bottom: 20px;
             margin-top: 8px;
         }
 
         button {
-            flex: 1;
             padding: 18px 24px;
             font-size: 16px;
             font-weight: 700;
@@ -196,35 +231,52 @@
             font-family: inherit;
         }
 
-        .reset-btn {
-            background: var(--bg-input);
-            color: var(--text-primary);
-            border: 1px solid var(--border-subtle);
-        }
-
-        .reset-btn:hover {
-            background: var(--bg-input-hover);
-            border-color: #3a3a3a;
-            transform: translateY(-1px);
-        }
-
-        .reset-btn:active {
-            transform: translateY(0);
-        }
-
-        .calculate-btn {
+        .btn-primary {
+            flex: 1;
             background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
             color: #000000;
             box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
         }
 
-        .calculate-btn:hover {
+        .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
         }
 
-        .calculate-btn:active {
+        .btn-primary:active {
             transform: translateY(0);
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-input-hover);
+            border-color: #3a3a3a;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        .btn-small {
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+
+        .btn-danger {
+            background: rgba(255, 59, 48, 0.15);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 59, 48, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 59, 48, 0.25);
         }
 
         .result-container {
@@ -293,9 +345,61 @@
             display: block;
         }
 
+        .materials-list {
+            margin-bottom: 20px;
+        }
+
+        .material-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .material-item:hover {
+            background: var(--bg-input-hover);
+            border-color: #3a3a3a;
+        }
+
+        .material-info {
+            flex: 1;
+        }
+
+        .material-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .material-rate {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .material-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-material-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .add-material-form .form-group {
+            margin-bottom: 0;
+        }
+
         .footer {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 36px;
             padding-top: 28px;
             border-top: 1px solid var(--border-subtle);
             font-size: 13px;
@@ -325,6 +429,10 @@
             .button-group {
                 flex-direction: column;
             }
+
+            .add-material-form {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -335,38 +443,65 @@
             <p class="subtitle">Print Price Calculator</p>
         </div>
 
-        <form id="calculator-form">
-            <div class="form-group">
-                <label for="height">Height (feet)</label>
-                <input type="number" id="height" name="height" step="0.01" min="0.01" required placeholder="Enter height">
-            </div>
-
-            <div class="form-group">
-                <label for="length">Length (feet)</label>
-                <input type="number" id="length" name="length" step="0.01" min="0.01" required placeholder="Enter length">
-            </div>
-
-            <div class="form-group">
-                <label for="material">Material Type</label>
-                <select id="material" name="material" required>
-                    <option value="">Select Material</option>
-                    <option value="sticker">Sticker (GHS 2.50 per sq ft)</option>
-                    <option value="flexy">Flexy (GHS 3.00 per sq ft)</option>
-                </select>
-            </div>
-
-            <div class="button-group">
-                <button type="button" class="reset-btn" id="reset-btn">Reset</button>
-                <button type="submit" class="calculate-btn">Calculate</button>
-            </div>
-        </form>
-
-        <div class="result-container" id="result-container" style="display: none;">
-            <p class="result-label">Grand Total</p>
-            <p class="result-value" id="result-value">GHS 0.00</p>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="calculator">Calculator</button>
+            <button class="tab-btn" data-tab="materials">Manage Materials</button>
         </div>
 
-        <div class="error-message" id="error-message"></div>
+        <div class="tab-content active" id="calculator-tab">
+            <form id="calculator-form">
+                <div class="form-group">
+                    <label for="height">Height (feet)</label>
+                    <input type="number" id="height" name="height" step="0.01" min="0.01" required placeholder="Enter height">
+                </div>
+
+                <div class="form-group">
+                    <label for="length">Length (feet)</label>
+                    <input type="number" id="length" name="length" step="0.01" min="0.01" required placeholder="Enter length">
+                </div>
+
+                <div class="form-group">
+                    <label for="material">Material Type</label>
+                    <select id="material" name="material" required>
+                        <option value="">Select Material</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn-secondary" id="reset-btn">Reset</button>
+                    <button type="submit" class="btn-primary">Calculate</button>
+                </div>
+            </form>
+
+            <div class="result-container" id="result-container">
+                <p class="result-label">Grand Total</p>
+                <p class="result-value" id="result-value">GHS 0.00</p>
+            </div>
+
+            <div class="error-message" id="error-message"></div>
+        </div>
+
+        <div class="tab-content" id="materials-tab">
+            <div class="add-material-form">
+                <div class="form-group">
+                    <label for="new-material-id">Material ID</label>
+                    <input type="text" id="new-material-id" placeholder="e.g., vinyl">
+                </div>
+                <div class="form-group">
+                    <label for="new-material-name">Material Name</label>
+                    <input type="text" id="new-material-name" placeholder="e.g., Vinyl Banner">
+                </div>
+                <div class="form-group">
+                    <label for="new-material-rate">Rate (GHS)</label>
+                    <input type="number" id="new-material-rate" step="0.01" min="0.01" placeholder="e.g., 3.50">
+                </div>
+                <div class="form-group" style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn-primary" id="add-material-btn" style="width: 100%;">Add Material</button>
+                </div>
+            </div>
+
+            <div class="materials-list" id="materials-list"></div>
+        </div>
 
         <div class="footer">
             Developed by <span>Nenifix-info</span> • Call <span>+233 20 256 4302</span>
@@ -374,11 +509,119 @@
     </div>
 
     <script>
+        let materials = {};
+
         const form = document.getElementById('calculator-form');
         const resetBtn = document.getElementById('reset-btn');
         const resultContainer = document.getElementById('result-container');
         const resultValue = document.getElementById('result-value');
         const errorMessage = document.getElementById('error-message');
+        const materialSelect = document.getElementById('material');
+        const materialsList = document.getElementById('materials-list');
+        const addMaterialBtn = document.getElementById('add-material-btn');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        async function loadMaterials() {
+            try {
+                const response = await fetch('/api/materials');
+                const data = await response.json();
+                if (data.success) {
+                    materials = data.materials;
+                    renderMaterials();
+                    renderMaterialSelect();
+                }
+            } catch (err) {
+                console.error('Error loading materials:', err);
+            }
+        }
+
+        function renderMaterialSelect() {
+            materialSelect.innerHTML = '<option value="">Select Material</option>';
+            for (const [id, mat] of Object.entries(materials)) {
+                materialSelect.innerHTML += `<option value="${id}">${mat.name} (GHS ${mat.rate.toFixed(2)} per sq ft)</option>`;
+            }
+        }
+
+        function renderMaterials() {
+            materialsList.innerHTML = '';
+            for (const [id, mat] of Object.entries(materials)) {
+                materialsList.innerHTML += `
+                    <div class="material-item">
+                        <div class="material-info">
+                            <div class="material-name">${mat.name}</div>
+                            <div class="material-rate">GHS ${mat.rate.toFixed(2)} per sq ft</div>
+                        </div>
+                        <div class="material-actions">
+                            <button type="button" class="btn-secondary btn-small" onclick="editMaterial('${id}')">Edit</button>
+                            <button type="button" class="btn-danger btn-small" onclick="deleteMaterial('${id}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function addMaterial() {
+            const id = document.getElementById('new-material-id').value.trim().toLowerCase().replace(/\s+/g, '-');
+            const name = document.getElementById('new-material-name').value.trim();
+            const rate = document.getElementById('new-material-rate').value;
+
+            if (!id || !name || !rate) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/materials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, name, rate })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    materials = data.materials;
+                    renderMaterials();
+                    renderMaterialSelect();
+                    document.getElementById('new-material-id').value = '';
+                    document.getElementById('new-material-name').value = '';
+                    document.getElementById('new-material-rate').value = '';
+                }
+            } catch (err) {
+                console.error('Error adding material:', err);
+            }
+        }
+
+        function editMaterial(id) {
+            const mat = materials[id];
+            document.getElementById('new-material-id').value = id;
+            document.getElementById('new-material-name').value = mat.name;
+            document.getElementById('new-material-rate').value = mat.rate;
+        }
+
+        async function deleteMaterial(id) {
+            if (!confirm('Are you sure you want to delete this material?')) return;
+            try {
+                const response = await fetch(`/api/materials/${id}`, { method: 'DELETE' });
+                const data = await response.json();
+                if (data.success) {
+                    materials = data.materials;
+                    renderMaterials();
+                    renderMaterialSelect();
+                }
+            } catch (err) {
+                console.error('Error deleting material:', err);
+            }
+        }
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -419,6 +662,10 @@
             resultContainer.style.display = 'none';
             errorMessage.classList.remove('show');
         });
+
+        addMaterialBtn.addEventListener('click', addMaterial);
+
+        loadMaterials();
     </script>
 </body>
 </html>

@@ -33,10 +33,10 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 24px;
+            align-items: flex-start;
+            padding: 40px 24px;
             position: relative;
-            overflow: hidden;
+            overflow-y: auto;
         }
 
         body::before {
@@ -234,6 +234,7 @@
             border: 1px solid rgba(255, 107, 53, 0.2);
             border-radius: 16px;
             display: none;
+            margin-top: 20px;
             animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 

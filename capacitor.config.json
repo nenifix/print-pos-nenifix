@@ -1,0 +1,8 @@
+{
+  "appId": "com.nenifix.asafoprintpos",
+  "appName": "Asafo Print POS",
+  "webDir": "public",
+  "server": {
+    "androidScheme": "https"
+  }
+}

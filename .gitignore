@@ -1,3 +1,13 @@
 node_modules/
 materials.json
+electron-windows/node_modules/
+electron-windows/dist/
+android/.gradle/
+android/build/
+android/app/build/
+android/app/.cxx/
+android/app/src/main/jniLibs/
+android/local.properties
+.DS_Store
+Thumbs.db
 

@@ -1,0 +1,28 @@
+{
+  "name": "asafo-print-pos",
+  "version": "1.0.0",
+  "description": "Asafo Print POS - Native Windows App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "keywords": [],
+  "author": "Nenifix-info",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.nenifix.asafoprintpos",
+    "productName": "Asafo Print POS",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    }
+  }
+}

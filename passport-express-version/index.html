@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asafo Print POS</title>
+    <style>
+        :root {
+            --bg-primary: #050505;
+            --bg-card: #0f0f0f;
+            --bg-input: #1a1a1a;
+            --bg-input-hover: #222222;
+            --accent-primary: #ff6b35;
+            --accent-secondary: #ff9f1c;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a0a0a0;
+            --text-muted: #666666;
+            --border-subtle: #2a2a2a;
+            --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', 'Arial', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 24px;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(255, 107, 53, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 80%, rgba(255, 159, 28, 0.05) 0%, transparent 45%);
+            pointer-events: none;
+            z-index: 0;
+            animation: subtleMove 20s ease-in-out infinite;
+        }
+
+        @keyframes subtleMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(2%, 2%) rotate(1deg); }
+        }
+
+        .calculator-card {
+            background: linear-gradient(145deg, var(--bg-card) 0%, #0a0a0a 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 24px;
+            padding: 56px 48px;
+            width: 100%;
+            max-width: 580px;
+            position: relative;
+            z-index: 1;
+            box-shadow: var(--shadow-soft);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .calculator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            opacity: 0.6;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+
+        .title {
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .user-email {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 36px;
+            background: var(--bg-input);
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            letter-spacing: 0.02em;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: #000000;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 18px 20px;
+            font-size: 17px;
+            font-weight: 500;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+
+        input:hover, select:hover {
+            background: var(--bg-input-hover);
+            border-color: #3a3a3a;
+        }
+
+        input:focus, select:focus {
+            background: var(--bg-input-hover);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            padding-right: 48px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 20px;
+            margin-top: 8px;
+        }
+
+        button {
+            padding: 18px 24px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.02em;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: #000000;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            flex: 1;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-input-hover);
+            border-color: #3a3a3a;
+            transform: translateY(-1px);
+        }
+
+        .btn-small {
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+
+        .btn-danger {
+            background: rgba(255, 59, 48, 0.15);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 59, 48, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 59, 48, 0.25);
+        }
+
+        .result-container {
+            text-align: center;
+            padding: 40px 32px;
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(255, 159, 28, 0.04) 100%);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 16px;
+            display: none;
+            margin-top: 20px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .result-value {
+            font-size: 56px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 20px 24px;
+            background: rgba(255, 59, 48, 0.08);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 12px;
+            color: #ff6b6b;
+            margin-top: 20px;
+            display: none;
+            font-weight: 500;
+            animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 20px 24px;
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+            border-radius: 12px;
+            color: #34c759;
+            margin-top: 20px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .materials-list {
+            margin-bottom: 20px;
+        }
+
+        .material-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .material-item:hover {
+            background: var(--bg-input-hover);
+            border-color: #3a3a3a;
+        }
+
+        .material-info {
+            flex: 1;
+        }
+
+        .material-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .material-rate {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .material-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-material-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .add-material-form .form-group {
+            margin-bottom: 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 36px;
+            padding-top: 28px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 13px;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        .footer span {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        @media (max-width: 640px) {
+            .calculator-card {
+                padding: 40px 28px;
+                border-radius: 20px;
+            }
+
+            .title {
+                font-size: 34px;
+            }
+
+            .result-value {
+                font-size: 48px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .add-material-form {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-card">
+        <div class="header">
+            <h1 class="title">Asafo Print POS</h1>
+            <p class="subtitle">Print Price Calculator</p>
+        </div>
+
+        <div id="auth-section">
+            <div id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password">
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn-primary" id="login-btn">Login</button>
+                </div>
+                <div class="button-group" style="margin-top: 0;">
+                    <button type="button" class="btn-secondary" id="show-signup-btn">Create Account</button>
+                </div>
+                <div class="error-message" id="login-error"></div>
+            </div>
+
+            <div id="signup-form" style="display: none;">
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" placeholder="Min 8 characters">
+                </div>
+                <div class="form-group">
+                    <label for="signup-password-confirm">Confirm Password</label>
+                    <input type="password" id="signup-password-confirm" placeholder="Confirm password">
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn-primary" id="signup-btn">Sign Up</button>
+                </div>
+                <div class="button-group" style="margin-top: 0;">
+                    <button type="button" class="btn-secondary" id="show-login-btn">Back to Login</button>
+                </div>
+                <div class="error-message" id="signup-error"></div>
+                <div class="success-message" id="signup-success"></div>
+            </div>
+        </div>
+
+        <div id="app-section" style="display: none;">
+            <div class="user-info">
+                <span class="user-email" id="user-email"></span>
+                <button type="button" class="btn-secondary btn-small" id="logout-btn">Logout</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="calculator">Calculator</button>
+                <button class="tab-btn" data-tab="materials">Manage Materials</button>
+            </div>
+
+            <div class="tab-content active" id="calculator-tab">
+                <form id="calculator-form">
+                    <div class="form-group">
+                        <label for="height">Height (feet)</label>
+                        <input type="number" id="height" name="height" step="0.01" min="0.01" required placeholder="Enter height">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="length">Length (feet)</label>
+                        <input type="number" id="length" name="length" step="0.01" min="0.01" required placeholder="Enter length">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="material">Material Type</label>
+                        <select id="material" name="material" required>
+                            <option value="">Select Material</option>
+                        </select>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" id="reset-btn">Reset</button>
+                        <button type="submit" class="btn-primary">Calculate</button>
+                    </div>
+                </form>
+
+                <div class="result-container" id="result-container">
+                    <p class="result-label">Grand Total</p>
+                    <p class="result-value" id="result-value">GHS 0.00</p>
+                </div>
+
+                <div class="error-message" id="error-message"></div>
+            </div>
+
+            <div class="tab-content" id="materials-tab">
+                <div class="add-material-form">
+                    <div class="form-group">
+                        <label for="new-material-id">Material ID</label>
+                        <input type="text" id="new-material-id" placeholder="e.g., vinyl">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-material-name">Material Name</label>
+                        <input type="text" id="new-material-name" placeholder="e.g., Vinyl Banner">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-material-rate">Rate (GHS)</label>
+                        <input type="number" id="new-material-rate" step="0.01" min="0.01" placeholder="e.g., 3.50">
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: flex-end;">
+                        <button type="button" class="btn-primary" id="add-material-btn" style="width: 100%;">Add Material</button>
+                    </div>
+                </div>
+
+                <div class="materials-list" id="materials-list"></div>
+            </div>
+
+            <div class="footer">
+                Developed by <span>Nenifix-info</span> • Call <span>+233 20 256 4302</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let materials = {};
+        let editingMaterialId = null;
+        let materialIdInput, addMaterialBtn;
+
+        const authSection = document.getElementById('auth-section');
+        const appSection = document.getElementById('app-section');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const showSignupBtn = document.getElementById('show-signup-btn');
+        const showLoginBtn = document.getElementById('show-login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const loginError = document.getElementById('login-error');
+        const signupError = document.getElementById('signup-error');
+        const signupSuccess = document.getElementById('signup-success');
+        const userEmailSpan = document.getElementById('user-email');
+
+        showSignupBtn.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            loginError.classList.remove('show');
+            signupError.classList.remove('show');
+            signupSuccess.classList.remove('show');
+        });
+
+        showLoginBtn.addEventListener('click', () => {
+            signupForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            loginError.classList.remove('show');
+            signupError.classList.remove('show');
+            signupSuccess.classList.remove('show');
+        });
+
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            loginError.classList.remove('show');
+
+            try {
+                const res = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showApp(data.user.email);
+                } else {
+                    loginError.textContent = data.error || 'Login failed';
+                    loginError.classList.add('show');
+                }
+            } catch (err) {
+                loginError.textContent = 'Login failed: ' + (err.message || 'Please try again');
+                loginError.classList.add('show');
+            }
+        });
+
+        signupBtn.addEventListener('click', async () => {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const passwordConfirm = document.getElementById('signup-password-confirm').value;
+
+            signupError.classList.remove('show');
+            signupSuccess.classList.remove('show');
+
+            if (password !== passwordConfirm) {
+                signupError.textContent = 'Passwords do not match';
+                signupError.classList.add('show');
+                return;
+            }
+
+            try {
+                const res = await fetch('/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    signupSuccess.textContent = 'Account created successfully!';
+                    signupSuccess.classList.add('show');
+                    setTimeout(async () => {
+                        await login(email, password);
+                    }, 1000);
+                } else {
+                    signupError.textContent = data.error || 'Signup failed';
+                    signupError.classList.add('show');
+                }
+            } catch (err) {
+                signupError.textContent = 'Signup failed: ' + (err.message || 'Please try again');
+                signupError.classList.add('show');
+            }
+        });
+
+        async function login(email, password) {
+            const res = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showApp(data.user.email);
+            }
+        }
+
+        logoutBtn.addEventListener('click', async () => {
+            await fetch('/auth/logout', { method: 'POST' });
+            showAuth();
+        });
+
+        function showAuth() {
+            authSection.style.display = 'block';
+            appSection.style.display = 'none';
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+        }
+
+        async function showApp(email) {
+            authSection.style.display = 'none';
+            appSection.style.display = 'block';
+            userEmailSpan.textContent = email;
+            await loadMaterials();
+            renderMaterialSelect();
+            renderMaterials();
+        }
+
+        async function loadMaterials() {
+            try {
+                const res = await fetch('/api/materials');
+                const data = await res.json();
+                if (data.success) {
+                    materials = data.materials;
+                }
+            } catch (err) {
+                console.error('Error loading materials:', err);
+            }
+        }
+
+        function renderMaterialSelect() {
+            const materialSelect = document.getElementById('material');
+            materialSelect.innerHTML = '<option value="">Select Material</option>';
+            for (const [id, mat] of Object.entries(materials)) {
+                materialSelect.innerHTML += `<option value="${id}">${mat.name} (GHS ${mat.rate.toFixed(2)} per sq ft)</option>`;
+            }
+        }
+
+        function renderMaterials() {
+            const materialsList = document.getElementById('materials-list');
+            materialsList.innerHTML = '';
+            for (const [id, mat] of Object.entries(materials)) {
+                materialsList.innerHTML += `
+                    <div class="material-item">
+                        <div class="material-info">
+                            <div class="material-name">${mat.name}</div>
+                            <div class="material-rate">GHS ${mat.rate.toFixed(2)} per sq ft</div>
+                        </div>
+                        <div class="material-actions">
+                            <button type="button" class="btn-secondary btn-small" onclick="editMaterial('${id}')">Edit</button>
+                            <button type="button" class="btn-danger btn-small" onclick="deleteMaterial('${id}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function clearMaterialForm() {
+            editingMaterialId = null;
+            materialIdInput.value = '';
+            materialIdInput.readOnly = false;
+            document.getElementById('new-material-name').value = '';
+            document.getElementById('new-material-rate').value = '';
+            addMaterialBtn.textContent = 'Add Material';
+        }
+
+        async function saveMaterial() {
+            const id = materialIdInput.value.trim().toLowerCase().replace(/\s+/g, '-');
+            const name = document.getElementById('new-material-name').value.trim();
+            const rate = document.getElementById('new-material-rate').value;
+
+            if (!id || !name || !rate) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/materials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ materialId: id, name, rate })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    materials = data.materials;
+                    renderMaterials();
+                    renderMaterialSelect();
+                    clearMaterialForm();
+                }
+            } catch (err) {
+                alert('Error saving material: ' + (err.message || 'Please try again'));
+            }
+        }
+
+        function editMaterial(id) {
+            const mat = materials[id];
+            editingMaterialId = id;
+            materialIdInput.value = id;
+            materialIdInput.readOnly = true;
+            document.getElementById('new-material-name').value = mat.name;
+            document.getElementById('new-material-rate').value = mat.rate;
+            addMaterialBtn.textContent = 'Update Material';
+        }
+
+        async function deleteMaterial(id) {
+            if (!confirm('Are you sure you want to delete this material?')) return;
+            
+            try {
+                const res = await fetch(`/api/materials/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    materials = data.materials;
+                    renderMaterials();
+                    renderMaterialSelect();
+                    if (editingMaterialId === id) {
+                        clearMaterialForm();
+                    }
+                }
+            } catch (err) {
+                alert('Error deleting material: ' + (err.message || 'Please try again'));
+            }
+        }
+
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        const form = document.getElementById('calculator-form');
+        const resetBtn = document.getElementById('reset-btn');
+        const resultContainer = document.getElementById('result-container');
+        const resultValue = document.getElementById('result-value');
+        const errorMessage = document.getElementById('error-message');
+        materialIdInput = document.getElementById('new-material-id');
+        addMaterialBtn = document.getElementById('add-material-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const height = parseFloat(document.getElementById('height').value);
+            const length = parseFloat(document.getElementById('length').value);
+            const materialId = document.getElementById('material').value;
+
+            errorMessage.classList.remove('show');
+            resultContainer.style.display = 'none';
+
+            if (isNaN(height) || isNaN(length) || height <= 0 || length <= 0) {
+                errorMessage.textContent = 'Please enter valid positive numbers for both dimensions.';
+                errorMessage.classList.add('show');
+                return;
+            }
+
+            if (!materials[materialId]) {
+                errorMessage.textContent = 'Please select a valid material type.';
+                errorMessage.classList.add('show');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ height, length, material: materialId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    resultValue.textContent = `GHS ${data.total.toFixed(2)}`;
+                    resultContainer.style.display = 'block';
+                } else {
+                    errorMessage.textContent = data.error || 'Error calculating';
+                    errorMessage.classList.add('show');
+                }
+            } catch (err) {
+                errorMessage.textContent = 'Error: ' + (err.message || 'Please try again');
+                errorMessage.classList.add('show');
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            form.reset();
+            resultContainer.style.display = 'none';
+            errorMessage.classList.remove('show');
+        });
+
+        addMaterialBtn.addEventListener('click', saveMaterial);
+
+        window.editMaterial = editMaterial;
+        window.deleteMaterial = deleteMaterial;
+
+        (async () => {
+            try {
+                const res = await fetch('/auth/user');
+                const data = await res.json();
+                if (data.success) {
+                    showApp(data.user.email);
+                }
+            } catch (e) {
+                showAuth();
+            }
+        })();
+    </script>
+</body>
+</html>

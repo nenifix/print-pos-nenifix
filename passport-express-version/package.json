@@ -1,0 +1,19 @@
+{
+  "name": "printcalc-nenifix-passport",
+  "version": "1.0.0",
+  "description": "Asafo Print POS with Passport.js authentication",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["pos", "print", "calculator"],
+  "author": "Godwin Appiah (Nenifix)",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.18.1",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "bcryptjs": "^2.4.3"
+  }
+}

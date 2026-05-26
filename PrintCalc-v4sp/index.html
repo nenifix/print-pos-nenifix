@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asafo Print POS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #121212;
+            border-radius: 16px;
+            padding: 40px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: #1a1a1a;
+            padding: 6px;
+            border-radius: 8px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .tab-btn.active {
+            background: #ff6b35;
+            color: #000;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+        input, select {
+            width: 100%;
+            padding: 14px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin: 24px 0;
+        }
+        button {
+            padding: 14px 24px;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-primary {
+            flex: 1;
+            background: #ff6b35;
+            color: #000;
+        }
+        .btn-secondary {
+            flex: 1;
+            background: #1a1a1a;
+            color: #fff;
+            border: 1px solid #2a2a2a;
+        }
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 14px;
+        }
+        .btn-danger {
+            background: #ff3b30;
+            color: #fff;
+        }
+        .result {
+            text-align: center;
+            padding: 32px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 12px;
+            margin-top: 24px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .result-label {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .result-value {
+            font-size: 48px;
+            font-weight: 800;
+            color: #ff6b35;
+        }
+        .error {
+            color: #ff6b6b;
+            padding: 16px;
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            border-radius: 8px;
+            margin-top: 16px;
+            display: none;
+        }
+        .error.show {
+            display: block;
+        }
+        .material-item {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-item {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #2a2a2a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Asafo Print POS</h1>
+        <p class="subtitle">Print Price Calculator</p>
+
+        <div id="auth">
+            <div id="login-form">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password">
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" id="login-btn">Login</button>
+                </div>
+                <div class="button-group" style="margin-top: 0;">
+                    <button class="btn-secondary" id="show-signup">Create Account</button>
+                </div>
+                <div class="error" id="login-error"></div>
+            </div>
+
+            <div id="signup-form" style="display: none;">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signup-email" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signup-password" placeholder="Password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="signup-confirm" placeholder="Confirm password">
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" id="signup-btn">Sign Up</button>
+                </div>
+                <div class="button-group" style="margin-top: 0;">
+                    <button class="btn-secondary" id="show-login">Back to Login</button>
+                </div>
+                <div class="error" id="signup-error"></div>
+            </div>
+        </div>
+
+        <div id="app" style="display: none;">
+            <div class="user-info">
+                <span id="user-email"></span>
+                <button class="btn-secondary btn-small" id="logout-btn">Logout</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="calculator">Calculator</button>
+                <button class="tab-btn" data-tab="materials">Materials</button>
+                <button class="tab-btn" data-tab="history">History</button>
+            </div>
+
+            <div class="tab-content active" id="calculator-tab">
+                <div class="form-group">
+                    <label>Height (feet)</label>
+                    <input type="number" id="height" step="0.01" min="0.01" placeholder="Enter height">
+                </div>
+                <div class="form-group">
+                    <label>Length (feet)</label>
+                    <input type="number" id="length" step="0.01" min="0.01" placeholder="Enter length">
+                </div>
+                <div class="form-group">
+                    <label>Material Type</label>
+                    <select id="material">
+                        <option value="">Select Material</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button class="btn-secondary" id="reset-btn">Reset</button>
+                    <button class="btn-primary" id="calculate-btn">Calculate</button>
+                </div>
+                <div class="result" id="result">
+                    <div class="result-label">Grand Total</div>
+                    <div class="result-value" id="result-value">GHS 0.00</div>
+                </div>
+                <div class="error" id="calc-error"></div>
+            </div>
+
+            <div class="tab-content" id="materials-tab">
+                <div class="form-group">
+                    <label>Material ID (e.g., vinyl)</label>
+                    <input type="text" id="mat-id" placeholder="Enter material ID">
+                </div>
+                <div class="form-group">
+                    <label>Material Name</label>
+                    <input type="text" id="mat-name" placeholder="Material name">
+                </div>
+                <div class="form-group">
+                    <label>Rate (GHS)</label>
+                    <input type="number" id="mat-rate" step="0.01" min="0.01" placeholder="Rate">
+                </div>
+                <button class="btn-primary" id="add-mat-btn" style="width:100%; margin-bottom:24px;">Add Material</button>
+                <div id="materials-list"></div>
+            </div>
+
+            <div class="tab-content" id="history-tab">
+                <div id="history-list"></div>
+            </div>
+
+            <div class="footer">
+                Developed by Nenifix-info • Call +233 20 256 4302
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        
+        const supabase = createClient(
+            'https://YOUR_PROJECT_URL.supabase.co',
+            'YOUR_ANON_KEY'
+        );
+
+        let materials = {};
+        let history = [];
+        let editingId = null;
+        let currentUser = null;
+
+        const authDiv = document.getElementById('auth');
+        const appDiv = document.getElementById('app');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const showSignup = document.getElementById('show-signup');
+        const showLogin = document.getElementById('show-login');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userEmailSpan = document.getElementById('user-email');
+        const loginError = document.getElementById('login-error');
+        const signupError = document.getElementById('signup-error');
+        const calculateBtn = document.getElementById('calculate-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const addMatBtn = document.getElementById('add-mat-btn');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const resultDiv = document.getElementById('result');
+        const resultValueDiv = document.getElementById('result-value');
+        const calcErrorDiv = document.getElementById('calc-error');
+        const materialSelect = document.getElementById('material');
+        const materialsListDiv = document.getElementById('materials-list');
+        const historyListDiv = document.getElementById('history-list');
+        const matIdInput = document.getElementById('mat-id');
+        const matNameInput = document.getElementById('mat-name');
+        const matRateInput = document.getElementById('mat-rate');
+
+        showSignup.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+            loginError.classList.remove('show');
+            signupError.classList.remove('show');
+        });
+        showLogin.addEventListener('click', () => {
+            signupForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            loginError.classList.remove('show');
+            signupError.classList.remove('show');
+        });
+
+        loginBtn.addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            loginError.classList.remove('show');
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                if (data.user) {
+                    await initUserData(data.user.id);
+                    showApp(email);
+                }
+            } catch (e) { 
+                loginError.textContent = e.message || 'Login failed'; 
+                loginError.classList.add('show'); 
+            }
+        });
+
+        signupBtn.addEventListener('click', async () => {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-confirm').value;
+            signupError.classList.remove('show');
+            if (password !== confirm) { 
+                signupError.textContent = 'Passwords do not match'; 
+                signupError.classList.add('show'); 
+                return; 
+            }
+            try {
+                const { data, error } = await supabase.auth.signUp({ email, password });
+                if (error) throw error;
+                if (data.user) {
+                    await initUserData(data.user.id);
+                    await login(email, password);
+                }
+            } catch (e) { 
+                signupError.textContent = e.message || 'Signup failed'; 
+                signupError.classList.add('show'); 
+            }
+        });
+
+        async function login(email, password) {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            if (data.user) showApp(email);
+        }
+
+        logoutBtn.addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            currentUser = null;
+            showAuth();
+        });
+
+        function showAuth() {
+            authDiv.style.display = 'block';
+            appDiv.style.display = 'none';
+        }
+
+        async function initUserData(userId) {
+            currentUser = userId;
+            const { data: existingMaterials } = await supabase
+                .from('materials')
+                .select('*')
+                .eq('user_id', userId);
+            
+            if (!existingMaterials || existingMaterials.length === 0) {
+                const defaultMaterials = [
+                    { material_id: 'sticker', name: 'Sticker', rate: 2.5, user_id: userId },
+                    { material_id: 'flexy', name: 'Flexy', rate: 3.0, user_id: userId },
+                    { material_id: 'banner', name: 'Banner', rate: 4.0, user_id: userId },
+                    { material_id: 'vinyl', name: 'Vinyl', rate: 3.5, user_id: userId }
+                ];
+                await supabase.from('materials').insert(defaultMaterials);
+            }
+        }
+
+        async function showApp(email) {
+            authDiv.style.display = 'none';
+            appDiv.style.display = 'block';
+            userEmailSpan.textContent = email;
+            await loadMaterials();
+            await loadHistory();
+            renderMaterialSelect();
+            renderMaterials();
+            renderHistory();
+        }
+
+        async function loadMaterials() {
+            try {
+                const { data, error } = await supabase
+                    .from('materials')
+                    .select('*')
+                    .eq('user_id', currentUser);
+                if (error) throw error;
+                materials = {};
+                data.forEach(mat => {
+                    materials[mat.material_id] = { name: mat.name, rate: mat.rate };
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadHistory() {
+            try {
+                const { data, error } = await supabase
+                    .from('history')
+                    .select('*')
+                    .eq('user_id', currentUser)
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                history = data.map(item => ({
+                    id: item.id,
+                    date: new Date(item.created_at).toLocaleDateString(),
+                    time: new Date(item.created_at).toLocaleTimeString(),
+                    height: item.height,
+                    length: item.length,
+                    material: item.material,
+                    rate: item.rate,
+                    total: item.total
+                }));
+            } catch(e) { console.error(e); }
+        }
+
+        function renderMaterialSelect() {
+            materialSelect.innerHTML = '<option value="">Select Material</option>';
+            for (const [id, mat] of Object.entries(materials)) {
+                materialSelect.innerHTML += `<option value="${id}">${mat.name} (GHS ${mat.rate.toFixed(2)})</option>`;
+            }
+        }
+
+        function renderMaterials() {
+            materialsListDiv.innerHTML = '';
+            for (const [id, mat] of Object.entries(materials)) {
+                materialsListDiv.innerHTML += `
+                    <div class="material-item">
+                        <div>
+                            <div style="font-weight:600;">${mat.name}</div>
+                            <div style="color:#aaa; font-size:14px;">GHS ${mat.rate.toFixed(2)}/sq ft</div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-secondary btn-small" onclick="editMaterial('${id}')">Edit</button>
+                            <button class="btn-danger btn-small" onclick="deleteMaterial('${id}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderHistory() {
+            historyListDiv.innerHTML = '';
+            if (history.length === 0) {
+                historyListDiv.innerHTML = '<div style="text-align:center; color:#666; padding:40px;">No history yet</div>';
+                return;
+            }
+            for (const item of history) {
+                historyListDiv.innerHTML += `
+                    <div class="history-item">
+                        <div>
+                            <div style="color:#aaa; font-size:13px;">${item.date} at ${item.time}</div>
+                            <div style="color:#ccc; font-size:14px;">${item.height}ft × ${item.length}ft • ${item.material} @ GHS ${item.rate.toFixed(2)}</div>
+                        </div>
+                        <div style="display:flex; gap:16px; align-items:center;">
+                            <div style="font-size:24px; font-weight:800; color:#ff6b35;">GHS ${item.total.toFixed(2)}</div>
+                            <button class="btn-danger btn-small" onclick="deleteHistoryItem('${item.id}')">×</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function clearMatForm() {
+            editingId = null;
+            matIdInput.value = '';
+            matNameInput.value = '';
+            matRateInput.value = '';
+            matIdInput.readOnly = false;
+            addMatBtn.textContent = 'Add Material';
+        }
+
+        addMatBtn.addEventListener('click', async () => {
+            const id = matIdInput.value.trim().toLowerCase().replace(/\s+/g, '-');
+            const name = matNameInput.value.trim();
+            const rate = parseFloat(matRateInput.value);
+            if (!id || !name || !rate) { alert('Fill all fields'); return; }
+            
+            try {
+                if (editingId) {
+                    await supabase
+                        .from('materials')
+                        .update({ name, rate })
+                        .eq('user_id', currentUser)
+                        .eq('material_id', editingId);
+                } else {
+                    await supabase.from('materials').insert({
+                        material_id: id,
+                        name,
+                        rate,
+                        user_id: currentUser
+                    });
+                }
+                
+                await loadMaterials();
+                renderMaterials();
+                renderMaterialSelect();
+                clearMatForm();
+            } catch(e) { alert('Error saving material: ' + e.message); }
+        });
+
+        window.editMaterial = function(id) {
+            const mat = materials[id];
+            editingId = id;
+            matIdInput.value = id;
+            matIdInput.readOnly = true;
+            matNameInput.value = mat.name;
+            matRateInput.value = mat.rate;
+            addMatBtn.textContent = 'Update Material';
+        };
+
+        window.deleteMaterial = async function(id) {
+            if (!confirm('Delete this material?')) return;
+            try {
+                await supabase
+                    .from('materials')
+                    .delete()
+                    .eq('user_id', currentUser)
+                    .eq('material_id', id);
+                await loadMaterials();
+                renderMaterials();
+                renderMaterialSelect();
+                if (editingId === id) clearMatForm();
+            } catch(e) { alert('Error deleting: ' + e.message); }
+        };
+
+        window.deleteHistoryItem = async function(id) {
+            if (!confirm('Delete this history item?')) return;
+            try {
+                await supabase.from('history').delete().eq('id', id).eq('user_id', currentUser);
+                await loadHistory();
+                renderHistory();
+            } catch(e) { alert('Error deleting: ' + e.message); }
+        };
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const tabId = btn.dataset.tab;
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+                if (tabId === 'history') { await loadHistory(); renderHistory(); }
+            });
+        });
+
+        calculateBtn.addEventListener('click', async () => {
+            const height = parseFloat(document.getElementById('height').value);
+            const length = parseFloat(document.getElementById('length').value);
+            const material = document.getElementById('material').value;
+            resultDiv.classList.remove('show');
+            calcErrorDiv.classList.remove('show');
+            if (isNaN(height) || isNaN(length) || height <=0 || length <=0) {
+                calcErrorDiv.textContent = 'Enter valid positive numbers';
+                calcErrorDiv.classList.add('show');
+                return;
+            }
+            if (!materials[material]) {
+                calcErrorDiv.textContent = 'Select a material';
+                calcErrorDiv.classList.add('show');
+                return;
+            }
+            try {
+                const grandTotal = (length * height) * materials[material].rate;
+                const roundedTotal = Math.round(grandTotal * 100) / 100;
+                await supabase.from('history').insert({
+                    user_id: currentUser,
+                    height,
+                    length,
+                    material: materials[material].name,
+                    rate: materials[material].rate,
+                    total: roundedTotal
+                });
+                resultValueDiv.textContent = `GHS ${roundedTotal.toFixed(2)}`;
+                resultDiv.classList.add('show');
+                await loadHistory();
+            } catch(e) { calcErrorDiv.textContent = 'Error calculating: ' + e.message; calcErrorDiv.classList.add('show'); }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            document.getElementById('height').value = '';
+            document.getElementById('length').value = '';
+            document.getElementById('material').value = '';
+            resultDiv.classList.remove('show');
+            calcErrorDiv.classList.remove('show');
+        });
+
+        (async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    currentUser = user.id;
+                    showApp(user.email);
+                }
+            } catch(e) { showAuth(); }
+        })();
+    </script>
+</body>
+</html>
